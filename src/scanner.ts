@@ -1,3 +1,4 @@
+import { KEYWORDS } from "./keywords";
 import { Token } from "./token";
 import { TokenType } from "./types";
 
@@ -5,8 +6,8 @@ export class Scanner {
 
   // static hadError: Boolean = false;
 
+  
   source: string
-  isAtEnd: boolean
   tokens: Token[]
   start: number = 0
   current: number = 0
@@ -14,13 +15,12 @@ export class Scanner {
 
   constructor(source: string) {
     this.source = source;
-    this.isAtEnd = false;
     this.tokens = [];
   }
 
 
   scanTokens(): Token[] {
-    while (!this.isAtEnd) {
+    while (!this.isAtEnd()) {
       this.start = this.current
       this.scanToken()
     }
@@ -70,12 +70,14 @@ export class Scanner {
       // case '^': this.addToken(TokenType.CARROT); break;
 
       default: 
+        console.log(char)
         if (Number.isFinite(char))
           this.number()
-        else if (char.toLowerCase() !== char.toUpperCase() || char === "_")
+        else if (Scanner.isIdentifierChar(char))
           this.identifier()
-        else
+        else 
           Scanner.error(this.line, `Unexpected character ${char}`); break
+
     }
   }
 
@@ -97,11 +99,11 @@ export class Scanner {
 
   string(char: string) {
     let peekchar = this.peek()
-    while (peekchar != char && !this.isAtEnd && peekchar != "\n"){
+    while (peekchar != char && !this.isAtEnd() && peekchar != "\n"){
       this.advance();
     }
 
-    if (this.isAtEnd || peekchar == "\n"){  
+    if (this.isAtEnd() || peekchar == "\n"){  
       Scanner.error(this.line, "Unterminated string.")
     }
 
@@ -112,7 +114,7 @@ export class Scanner {
   }
 
   peek(ahead: number = 0): string {
-    if (this.isAtEnd) return '\0';
+    if (this.isAtEnd()) return '\0';
     if (this.current + ahead > this.source.length) return '\0'
     return this.source.charAt(this.current + ahead)
   }
@@ -122,23 +124,37 @@ export class Scanner {
   }
 
   identifier(){
+    while (Scanner.isIdentifierChar(this.peek())) this.advance()
+    
+    var text = this.source.substring(this.start, this.current);
+    var type = KEYWORDS.get(text)
+
+    if (type == null) type = TokenType.IDENTIFIER
+    this.addToken(type)
 
   }
 
+  
   match(expected: string): boolean {
-    if (this.isAtEnd) return false;
+    if (this.isAtEnd()) return false;
     if (this.source.charAt(this.current) != expected) return false;
-
+    
     this.current++;
     return true;
   }
-
+  
+  isAtEnd() {
+    return this.current >= this.source.length
+  }
 
   addToken(type: TokenType, literal: any = null) {
     let str = this.source.substring(this.start, this.current)
     this.tokens.push(new Token(type, str, literal, this.line, 0))
   }
-
+  
+  static isIdentifierChar(char: string){
+    return char.toLowerCase() !== char.toUpperCase() || Number.isFinite(char) || char === "_"
+  }
 
   static error(line: number, msg: string) {
     Scanner.report(line, "", msg);

@@ -6,11 +6,10 @@ import * as readline from "node:readline"
 import { Scanner } from "./scanner"
 import { Token } from "./token"
 
-
-
-
-
-
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+})
 
 function runFile(filename: fs.PathLike) {
   let input = open.readFileSync(filename).toString()
@@ -18,26 +17,27 @@ function runFile(filename: fs.PathLike) {
 }
 
 function runPrompt() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  })
-
+  let input = null;
   rl.question("> ", (line) => {
     if (line.trim() === "") {
       rl.close()
       return;
-    } else run(line)
-  })
+    } 
+    
+    run(line)
+    runPrompt();    
+  })  
 }
+
+
+
 
 function run(code: string) {
   let scanner: Scanner = new Scanner(code);
   let tokens: Token[] = scanner.scanTokens();
 
-
   for (let token of tokens) {
-    console.log(token)
+    console.log(token.toString())
   }
 }
 

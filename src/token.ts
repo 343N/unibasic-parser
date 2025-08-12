@@ -18,6 +18,6 @@ export class Token {
 
   
   toString(): string {
-    return `${this.type} - ${this.lexeme} - ${this.literal}`
+    return `${TokenType[this.type]} - ${this.lexeme} - ${this.literal}`
   }
 }
