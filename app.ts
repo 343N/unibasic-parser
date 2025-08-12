@@ -1,10 +1,10 @@
 
-import open = require("node:fs")
-import type nodeFs = require("node:fs")
-import process = require("node:process")
-import readline = require("node:readline")
-import {Scanner} from "./scanner"
-import { Token } from "./types"
+import * as open from "node:fs"
+import type fs from "node:fs"
+import * as process from "node:process"
+import * as readline from "node:readline"
+import { Scanner } from "./scanner"
+import { Token } from "./token"
 
 
 
@@ -12,18 +12,18 @@ import { Token } from "./types"
 
 
 
-function runFile(filename: nodeFs.PathLike){
+function runFile(filename: fs.PathLike) {
   let input = open.readFileSync(filename).toString()
   run(input)
 }
 
-function runPrompt(){
+function runPrompt() {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   })
 
-  rl.question("> ", (line) =>{
+  rl.question("> ", (line) => {
     if (line.trim() === "") {
       rl.close()
       return;
@@ -31,18 +31,18 @@ function runPrompt(){
   })
 }
 
-function run(code: string){
+function run(code: string) {
   let scanner: Scanner = new Scanner(code);
   let tokens: Token[] = scanner.scanTokens();
 
 
-  for (let token of tokens){
+  for (let token of tokens) {
     console.log(token)
   }
 }
 
 
-function init(){
+function init() {
   const args = process.argv.slice(2)
   if (args.length > 2) {
     console.log("Usage: app [filename]")
